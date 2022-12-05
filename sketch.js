@@ -1,10 +1,16 @@
 let player;
 let cpu;
 let menu;
-let guageButtons;
+let gaugeButtons;
 let ppMoveButtons;
 let startButton;
 let slider
+
+let gameGraphics
+let gameGraphicsCoords = {y: 0}
+
+let globalAnimations = []
+let gameGraphicsAnimation
 
 const game = {
     isStarted: false,
@@ -47,8 +53,11 @@ function setup() {
     //p5 setup
     createCanvas(600, 600);
 
+    gameGraphics = createGraphics(600, 450)
+    gameGraphicsAnimation = new Animation(gameGraphicsCoords, {y: [150, 20, 'linear']})
+
     slider = createSlider(0, 100, 100)
-    slider.position(10, 10)
+    slider.position(10, 10) 
 
     //GENERATE CPU MOVES/ SHOW PREFS
     cpuTurnChoices = generateMoveChoices()
@@ -62,10 +71,15 @@ function setup() {
     initAllButtons()
 }
 
+function moveButtons() {
+    for (let animation of globalAnimations){
+        animation.play()
+    }
+}
 
 function draw() {
     background(220);
-    textSize(20)
+    gameGraphics.textSize(20)
     //player.ap = slider.value()
     //DISPLAY DURING GAMEPLAY ONLY
     //stuff to show in gameplay loop
@@ -78,6 +92,9 @@ function draw() {
             cpuData.isTurn = false;
             takeTurn(cpu, player)
         }
+        
+        
+        gameGraphics.background(220);
 
         //DRAW VISUAL ELEMENTS
         //lets make hp display/ gauge display consistent
@@ -90,28 +107,37 @@ function draw() {
         drawHpBar(cpu, cpuData.coords.hpBar[0], cpuData.coords.hpBar[1]);
         drawGauge(cpu, cpuData.coords.gauge[0], cpuData.coords.gauge[1])
         //drawShield(cpu, cpuData.coords.hpBar[0], cpuData.coords.hpBar[1] + 30)
+        
         cpu.drawCharacter();
-
-        // draw buttons
-        menu.show();
-        guageButtons.show()
-        ppMoveButtons.show()
 
         showMovePP(0, 0)
 
-
         showCpuPreference(10, 20)
+
+        popup.textObject?.show()
+
+        image(gameGraphics, 0, gameGraphicsCoords.y)
+
+        // draw buttons
+        menu.show();
+        gaugeButtons.show()
+        ppMoveButtons.show()
+
+
 
         //ANIMATIONS
         player.animate()
         cpu.animate()
+        gameGraphicsAnimation.animate()
+        for (let animations of globalAnimations) {
+            animations.animate()
+        }
 
 
         //POPUP
         // if(popupText){
         //     popupText.show()
         // }
-        popup.textObject?.show()
 
     } else {
         startButton.show();
@@ -143,7 +169,11 @@ function takeTurn(character, enemy, moveName) {
             moveName = cpuChooseMove()             //...select random cpu move
             character.endTurn = enableAllowedButtons  //...fn to advance turn toggles player buttons active
         } else {
-            character.endTurn = () => { cpuData.isTurn = true }
+            character.endTurn = () => {
+                moveButtons()
+                gameGraphicsAnimation.play()
+                //cpuData.isTurn = true 
+            }
         }
         //set popup text using moveName then...
         setPopupString(moveName, character, popup.maxDuration)
@@ -264,19 +294,19 @@ function regenMovePP(character) {
 
 //display gauge needs to become a class method
 function drawGauge(character, x, y) {
-    push()
+    gameGraphics.push()
     let w = 170
     let h = 16
-    stroke(0)
-    fill(90, 55, 160)
-    rect(x, y, character.gp * w / character.maxgp, h)
-    noFill()
-    rect(x, y, w, h)
+    gameGraphics.stroke(0)
+    gameGraphics.fill(90, 55, 160)
+    gameGraphics.rect(x, y, character.gp * w / character.maxgp, h)
+    gameGraphics.noFill()
+    gameGraphics.rect(x, y, w, h)
 
     for (let dW = 0; dW < w; dW += w / character.maxgp) {
-        line(x + dW, y, x + dW, y + h)
+        gameGraphics.line(x + dW, y, x + dW, y + h)
     }
-    pop()
+    gameGraphics.pop()
 }
 
 function drawHpBar(character, x, y) {
@@ -291,25 +321,25 @@ function drawHpBar(character, x, y) {
         b = 10
     }
 
-    push()
-    stroke(0);
-    strokeWeight(2)
-    noFill();
-    rect(x - 1, y - 1, 300 - 2, 20 + 2);
-    fill(r, g, b)
+    gameGraphics.push()
+    gameGraphics.stroke(0);
+    gameGraphics.strokeWeight(2)
+    gameGraphics.noFill();
+    gameGraphics.rect(x - 1, y - 1, 300 - 2, 20 + 2);
+    gameGraphics.fill(r, g, b)
     //fill(40);
-    noStroke();
+    gameGraphics.noStroke();
 
-    rect(x, y, (character.hp / 100) * 300, 20);
-    pop()
+    gameGraphics.rect(x, y, (character.hp / 100) * 300, 20);
+    gameGraphics.pop()
 }
 
 function drawShield(character, x, y) {
-    push()
-    stroke(80, 60, 200)
-    strokeWeight(4)
-    line(x, y, x + (character.ap / 100) * 300, y);
-    pop()
+    gameGraphics.push()
+    gameGraphics.stroke(80, 60, 200)
+    gameGraphics.strokeWeight(4)
+    gameGraphics.line(x, y, x + (character.ap / 100) * 300, y);
+    gameGraphics.pop()
 }
 
 
@@ -335,6 +365,6 @@ class Popup {
         setTimeout(() => this.on = false, this.dur);
     }
     show() {
-        if (this.on) text(this.text, this.x, this.y)
+        if (this.on) gameGraphics.text(this.text, this.x, this.y)
     }
 }

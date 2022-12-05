@@ -6,7 +6,7 @@ class Character {
         this.x = x;
         this.y = y;
         this.spritePath = spritePath
-        this.endTurnDelay = 4000;
+        this.endTurnDelay = 2000;
 
         //stats
         this.atk = 4;
@@ -74,7 +74,7 @@ class Character {
     }
 
     drawCharacter() {
-        image(this.sprite, this.x, this.y, 150, 150)
+        gameGraphics.image(this.sprite, this.x, this.y, 150, 150)
     }
 
     heal(responsePopup) {

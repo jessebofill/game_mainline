@@ -1,12 +1,40 @@
+function makeButtonAnimations(){
+    let menuButtons = []
+    let gButtons = []
+
+    for (let prop in menu) {
+        if (menu[prop] instanceof Button){
+            menuButtons.push(menu[prop])
+        }
+    }
+
+    for (let prop in gaugeButtons) {
+        if (gaugeButtons[prop] instanceof Button){
+            gButtons.push(gaugeButtons[prop])
+        }
+    }
+
+    for (let button of menuButtons){
+        globalAnimations.push(new Animation(button, {y: [[150, 19, 'linear'],[-600, 20, 'linear']]}))
+    }
+
+    for (let button of gButtons){
+        globalAnimations.push(new Animation(button, {y: [[150, 19, 'linear'],[-400, 20, 'linear']], x: [[0, 19, 'linear'], [-300, 20, 'linear']]}))
+    }
+}
+
+
 function initAllButtons(){
     startButton = new Button(200, 250, 200, 100, "Start");
     startButton.onClick(() => { game.isStarted = true; enableAllowedButtons() });
 
     initMoveButtons()
-    initGuageButtons()
+    initGaugeButtons()
     
     menu.onClickAny(disableButtons)
-    guageButtons.onClickAny(disableButtons)
+    gaugeButtons.onClickAny(disableButtons)
+
+    makeButtonAnimations()
 
     disableButtons()
 
@@ -22,15 +50,15 @@ function initMoveButtons () {
     }
 }
 
-function initGuageButtons () {
-    guageButtons = new ButtonMan(3, 3, 1, width / 6, 50, width / 2, 400, width / 2, 50)
-    guageButtons.rename('button0', 'regenPP', 'PP Up')
-    guageButtons.rename('button1', 'renewArmor', 'Renew Armor')
-    guageButtons.rename('button2', 'special')
+function initGaugeButtons () {
+    gaugeButtons = new ButtonMan(3, 3, 1, width / 6, 50, width / 2, 400, width / 2, 50)
+    gaugeButtons.rename('button0', 'regenPP', 'PP Up')
+    gaugeButtons.rename('button1', 'renewArmor', 'Renew Armor')
+    gaugeButtons.rename('button2', 'special')
 
-    guageButtons.regenPP.onClick(setPPMoveButtonsVisibility, true)
-    guageButtons.renewArmor.onClick(takeTurn, player, cpu, 'renewArmor')
-    guageButtons.special.onClick(takeTurn, player, cpu, 'special')
+    gaugeButtons.regenPP.onClick(setPPMoveButtonsVisibility, true)
+    gaugeButtons.renewArmor.onClick(takeTurn, player, cpu, 'renewArmor')
+    gaugeButtons.special.onClick(takeTurn, player, cpu, 'special')
 
     initPPMoveButtons()
 }
@@ -52,21 +80,21 @@ function initPPMoveButtons(){
 
 function enableAllowedButtons() {
     let allowedMenuButtons = [];
-    let allowedGuageButtons = [];
+    let allowedGaugeButtons = [];
 
     for (let move in player.pp) {
         if (player.pp[move].cur) allowedMenuButtons.push(move)
     }
     
     for (let move in player.gpCost) {
-        if (player.gp >= player.gpCost[move]) allowedGuageButtons.push(move)
+        if (player.gp >= player.gpCost[move]) allowedGaugeButtons.push(move)
     }
     
     menu.setProperty('active', true, ...allowedMenuButtons)
-    guageButtons.setProperty('active', true, ...allowedGuageButtons)
+    gaugeButtons.setProperty('active', true, ...allowedGaugeButtons)
 }
 
 function disableButtons(){
     menu.setProperty("active", false, "all");
-    guageButtons.setProperty("active", false, "all");
+    gaugeButtons.setProperty("active", false, "all");
 }
