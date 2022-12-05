@@ -136,6 +136,8 @@ function takeTurn(character, enemy, moveName) {
     //moveName is string of move to use 
     //check if game is over
     if (!game.isFinished) {
+        let responsePopup
+
         //if it's cpu's turn...
         if (character.user == 'cpu') {
             moveName = cpuChooseMove()             //...select random cpu move
@@ -146,16 +148,22 @@ function takeTurn(character, enemy, moveName) {
         //set popup text using moveName then...
         setPopupString(moveName, character, popup.maxDuration)
 
-        if (moveName === 'attack') {
-            character.doWithMoveResult = (result) => {
-                let delay = result == 'miss' ? 0 : 1000;
-
-                setTimeout(() => setPopupString(result, character, popup.maxDuration), delay)
+        responsePopup = (result) => {
+            let delayedStrings = {
+                normalHit: true,
+                superLucky: true,
+                lucky: true,
             }
+
+            let delay = delayedStrings[result] ? 1000 : 0;
+            console.log(result)
+
+            setTimeout(() => setPopupString(result, character, popup.maxDuration, true), delay)
         }
 
+
         //call character class move using moveName
-        setTimeout(() => { character.doMove(moveName, enemy) }, 1000)
+        setTimeout(() => { character.doMove(moveName, responsePopup, enemy) }, 1000)
 
     }
 }
@@ -188,39 +196,48 @@ function showCpuPreference(x, y) {
     text(cpuData.movePreference, x, y);
 }
 
-function setPopupString(lookup, character, maxDur) {
+function setPopupString(lookup, character, maxDur, isResponse) {
     let user
+    let enemies
     let newText
+    let strings
     if (character.user === 'player') {
         user = 'You'
+        enemies = "CPU's"
         popup.coords = playerData.coords.popup
 
     } else {
         user = 'CPU'
+        enemies = 'your'
         popup.coords = cpuData.coords.popup
     }
 
-    switch (lookup) {
-        case 'attack':
-            newText = user + ' Attacks!'
-            break;
-        case 'heal':
-            newText = user + ' Heals!'
-            break;
-        case 'move3':
-            newText = user + ' uses move 3!'
-            break;
-        case 'move4':
-            newText = user + ' uses move 4!'
-            break;
-        case 'crit':
-            newText = user + ' got a critical hit!'
-            break;
-        case 'miss':
-            newText = user + ' missed!'
-            break;
-        default: newText = 'not defined'
+
+    if (isResponse) {
+        strings = {
+            normalHit: 'It hit normally',
+            superLucky: 'It was super lucky hit!',
+            lucky: 'It was a lucky hit!',
+            heal: user + ' regained some health',
+            patchArmor: "It's blocking power was slightly restored",
+            armorPierce: "It's took some damage",
+            regenPP: 'Move PP went up',
+            renewArmor: "It's back to original condition",
+            special: 'It did massive damage!!!'
+        }
+    } else {
+        strings = {
+            attack: user + ' attacked!',
+            heal: user + ' healed!',
+            patchArmor: user + ' patched their armor',
+            armorPierce: user + ' attacked ' + enemies + ' armor',
+            regenPP: user + ' regens some PP',
+            renewArmor: user + ' got new armor',
+            special: user + ' used a secret ancient technique!'
+        }
     }
+    newText = strings[lookup]
+
 
     popup.textObject = new Popup(newText, popup.coords[0], popup.coords[1], maxDur)
 }

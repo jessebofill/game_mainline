@@ -6,28 +6,35 @@ class Character {
         this.x = x;
         this.y = y;
         this.spritePath = spritePath
-        this.endTurnDelay = 1000;
+        this.endTurnDelay = 4000;
 
-
+        //stats
         this.atk = 4;
         this.hl = 10;
         this.def = 10;
         this.admg = 10;
         this.ahl = 10;
 
+        //multipliers
+        this.slMultiplier = 2.5
+        this.lkMultiplier = 1.25
+
+        //probabilities
         this.hitChance = 90;
         this.luck = 33; //33
         this.superLuck = 0;  //get calculated based on consecHitCount, 5 by default
 
+        //points
         this.gp = 5
         this.maxgp = 5
         this.hp = 100;
         this.ap = 0
         //this.pp = [{ cur: 1, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }]
+
         this.consecHitCount = 0
 
         this.pp = {
-            attack: { cur: 0, max: 10 },
+            attack: { cur: 1, max: 10 },
             heal: { cur: 10, max: 10 },
             patchArmor: { cur: 10, max: 10 },
             armorPierce: { cur: 10, max: 10 }
@@ -70,18 +77,19 @@ class Character {
         image(this.sprite, this.x, this.y, 150, 150)
     }
 
-    heal() {
+    heal(responsePopup) {
         this.pp['heal'].cur--
         this.animations.hp.asPercent(this.hl)
 
         return () => {
+            responsePopup('heal')
             return this.animations.hp.play().then()
         }
     }
 
 
-    attack(enemy) {
-        let hitOutcome = 'hit'
+    attack(responsePopup, enemy) {
+        let hitOutcome = 'normalHit'
         let handleOutcome
         let defWeaknessMultiplier = Character.getDefenseWeaknessMultiplier(enemy.ap)
 
@@ -97,12 +105,12 @@ class Character {
 
             //if we get superlucky
             if (Character.probability(this.superLuck)) {
-                dmg = Math.round(dmg * 2.5);
+                dmg = Math.round(dmg * this.slMultiplier);
                 hitOutcome = 'superLucky'
 
                 //else if we get regular lucky
             } else if (Character.probability(this.luck)) {
-                dmg = Math.round(dmg * 1.25);
+                dmg = Math.round(dmg * this.lkMultiplier);
 
 
                 //add code to increase gauge
@@ -115,7 +123,7 @@ class Character {
 
             enemy.animations.hp.asPercent(-dmg);
             handleOutcome = () => {
-                this.doWithMoveResult(hitOutcome)
+                responsePopup(hitOutcome)
                 if (hitOutcome === 'superLucky') enemy.ap -= 20
                 return enemy.animations.hp.play().then(() => { if (hitOutcome === 'lucky' && this.gp < this.maxgp) this.gp++ })
             }
@@ -124,7 +132,7 @@ class Character {
             hitOutcome = 'miss'
 
             handleOutcome = () => {
-                this.doWithMoveResult(hitOutcome)
+                responsePopup(hitOutcome)
                 return Promise.resolve()
             }
         }
@@ -132,21 +140,22 @@ class Character {
         return handleOutcome
     }
     //corresponding move animation will play first...
-    patchArmor() {
+    patchArmor(responsePopup) {
         //...then return callback to do next steps...
         //...calculate and apply shield restore
 
-        this.pp['pathchArmor'].cur--
+        this.pp['patchArmor'].cur--
 
         return () => {
             this.ap = Character.getAp(this.ap, this.ahl)
-            console.log("test!!!!!")
+
+            responsePopup('patchArmor')
             return Promise.resolve()
         }
     }
 
     //attack shield
-    armorPierce(enemy) {
+    armorPierce(responsePopup, enemy) {
         //...then return callback to do next steps...
         //...calculate and apply shield restore
 
@@ -154,39 +163,48 @@ class Character {
 
         return () => {
             enemy.ap = Character.getAp(enemy.ap, Math.round(-this.admg * random(0.7, 1.3)))
+            responsePopup('armorPierce')
             return Promise.resolve()
         }
     }
 
-    regenPP() {
+    regenPP(responsePopup) {
         return () => {
             this.pp[this.ppUpSelection].cur += 5
             this.gp -= this.gpCost.regenPP
+
+            responsePopup('regenPP')
             return Promise.resolve()
         }
     }
 
-    renewArmor() {
+    renewArmor(responsePopup) {
         return () => {
             this.gp -= this.gpCost.renewArmor
+
+            responsePopup('renewArmor')
             return this.animations.refillArmor.play().then()
         }
 
     }
 
-    special() {
+    special(responsePopup, enemy) {
+
+        this.gp -= this.gpCost.special
+
         return () => {
-            this.gp -= this.gpCost.special
-    
-            return Promise.resolve()
+            responsePopup('special')
+            enemy.animations.hp.asPercent(-30);
+            return enemy.animations.hp.play().then()
         }
+
 
     }
 
-    doMove(move, enemy) {
+    doMove(move, responsePopup, enemy) {
         if (move !== 'attack') this.consecHitCount = 0
         let characterAnimationPlay = this.animations[move]?.play ?? (() => Promise.resolve())
-        let handleOutcome = this[move](enemy)
+        let handleOutcome = this[move](responsePopup, enemy)
         characterAnimationPlay().then(handleOutcome).then(this.delayTurn).then(this.endTurn);
     }
 
