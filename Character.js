@@ -1,7 +1,7 @@
 class Character {
     constructor(userType, x, y, spritePath) {
         let t = this;
-        if (userType !== "player" && userType !== "cpu") console.warn("not valid user type");
+        if (userType !== "player1" && userType !== "player2" && userType !== "cpu") console.warn("not valid user type");
 
         this.x = x;
         this.y = y;
@@ -58,7 +58,7 @@ class Character {
 
         this.animations = {
             hp: new Animation(this, frames.common.hp),
-            attack: new Animation(this, frames[userType].atk),
+            attack: new Animation(this, frames[userType === 'player1' ? 'player1' : 'player2'].atk),
             refillArmor: new Animation(this, frames.common.refillArmor, 'abs')
         };
 
@@ -74,7 +74,7 @@ class Character {
     }
 
     drawCharacter() {
-        gameGraphics.image(this.sprite, this.x, this.y, 150, 150)
+        gameplayFrameBuffer.image(this.sprite, this.x, this.y, 150, 150)
     }
 
     heal(responsePopup) {

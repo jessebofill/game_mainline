@@ -1,9 +1,9 @@
 let frames = {   
-  player:{
+  player1:{
     atk: {x: [[-10, 20, 'linear'], [20, 50, 'linear']]}
   },
 
-  cpu: {
+  player2: {
     atk: {x: [[10, 20, 'linear'], [-20, 50, 'linear']]}
   
   },
