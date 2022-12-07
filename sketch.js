@@ -7,7 +7,6 @@ let ppMoveButtons;
 
 let slider
 
-let is2playerMode = false
 
 const startButtons = []
 
@@ -20,9 +19,10 @@ const buttons = {
 let gameplayFrameBuffer
 let gameplayFrameBufferY = { y: 0 }
 
-let globalAnimations = []
-let gameGraphicsAnimation
-
+let gameplayScreenAnimations = {
+    shiftUp: [],
+    shiftDown: []
+}
 
 const game = {
     isStarted: false,
@@ -40,7 +40,7 @@ const player1Data = {
         character: [50, 250],
         hpBar: [250, 300],
         gauge: [350, 350],
-        popup: [100, 250]
+        popup: [250, 280]
     },
     spritePath: 'pixilart-drawing.png'
 }
@@ -50,11 +50,15 @@ const player2Data = {
         character: [400, 50],
         hpBar: [50, 100],
         gauge: [150, 150],
-        popup: [300, 100]
+        popup: [50, 200]
     },
-    spritePath: 'pixilart-drawing.png',
+    spritePath: 'pixilart-drawing.png'
+
+}
+
+const cpuData = {
     isTurn: false,
-    moveOptions: [0],
+    moveOptions: [3],
     movePreference: ''
 }
 
@@ -71,36 +75,58 @@ function createCharacters(is2player) {
 function startGame(is2player) {
     startButtons[0].active = false
     startButtons[1].active = false
-    //is2playerMode = is2player ?? false
     createCharacters(is2player)
     initGameButtons(is2player)
     enableAllowedButtons(player1)
+    setCharacterEndTurnFNs(player1, player2)
+    setCharacterEndTurnFNs(player2, player1)
+
+    if (is2player) create2pScreenShiftAnimations()
+    //cpuData.moveOptions = generateMoveChoices()
+    getCpuPrefString();
+
     game.isStarted = true;
 }
+
+function create2pScreenShiftAnimations(){
+    function getGroupAnimation(button, buttonGroup, dir) {
+        let yShift = dir ? 205 : -205
+        let groupAnimations = {
+            mainMoves: new Animation(button, { y: [yShift, 20, 'linear'] }),
+            gaugeMoves: new Animation(button, { y: [yShift, 20, 'linear'] }),
+            ppUps: new Animation(button, { y: [yShift, 20, 'linear'] })
+        }
+        return groupAnimations[buttonGroup]
+    }
+
+    for (let buttonGroup in buttons) {
+        for (let buttonMan of buttons[buttonGroup]) {
+            for (let prop in buttonMan) {
+                if (buttonMan[prop] instanceof Button) {
+                    gameplayScreenAnimations.shiftUp.push(getGroupAnimation(buttonMan[prop], buttonGroup, false))
+                    gameplayScreenAnimations.shiftDown.push(getGroupAnimation(buttonMan[prop], buttonGroup, true))
+                }
+            }
+        }
+    }
+
+    gameplayScreenAnimations.shiftDown.push(new Animation(gameplayFrameBufferY, { y: [150, 20, 'linear'] }))
+    gameplayScreenAnimations.shiftUp.push(new Animation(gameplayFrameBufferY, { y: [-150, 20, 'linear'] }))
+}
+
 
 function setup() {
     //p5 setup
     createCanvas(600, 600);
 
     gameplayFrameBuffer = createGraphics(600, 450)
-    gameGraphicsAnimation = new Animation(gameplayFrameBufferY, { y: [150, 20, 'linear'] })
+
 
     slider = createSlider(0, 100, 100)
     slider.position(10, 10)
 
-    //GENERATE CPU MOVES/ SHOW PREFS
-    cpuTurnChoices = generateMoveChoices()
-    //cpu prefs
-    getCpuPrefString();
-
 
     createStartButtons()
-}
-
-function shiftButtons() {
-    for (let animation of globalAnimations) {
-        animation.play()
-    }
 }
 
 function draw() {
@@ -113,10 +139,10 @@ function draw() {
 
         //TAKE CPU TURN
         //check if it's cpu's turn and take turn if it is
-        if (player2Data.isTurn) {
+        if (cpuData.isTurn) {
             console.log('cputurn')
-            player2Data.isTurn = false;
-            takeTurn(player2, player1)
+            cpuData.isTurn = false;
+            takeTurn(player2, player1, cpuChooseMove())
         }
 
 
@@ -136,15 +162,15 @@ function draw() {
 
         player2.drawCharacter();
 
-        
+
         showCpuPreference(10, 20)
-        
+
         popup.textObject?.show()
-        
+
         image(gameplayFrameBuffer, 0, gameplayFrameBufferY.y)
-        
+
         // draw buttons
-        
+
         showButtons()
         showMovePP(0, 0)
 
@@ -153,10 +179,7 @@ function draw() {
         //ANIMATIONS
         player1.animate()
         player2.animate()
-        gameGraphicsAnimation.animate()
-        for (let animations of globalAnimations) {
-            animations.animate()
-        }
+        animateGameplayScreen()
 
 
         //POPUP
@@ -167,7 +190,7 @@ function draw() {
         //END GAME
         if (player2.hp === 0) endGame("You Win!");
         if (player1.hp === 0) {
-            moveButtons.setProperty("active", false, "all");
+            disableAllButtons()
             endGame("You Lose!");
         }
     } else {
@@ -179,16 +202,30 @@ function draw() {
 
 }
 
+function animateGameplayScreen() {
+    for (let dirs in gameplayScreenAnimations) {
+        for (let animation of gameplayScreenAnimations[dirs]) {
+            animation.animate()
+        }
+    }
+}
 
-function switchPlayers() {
-    let isp1 = currentPlayer === player1
-    console.log(isp1)
-    if (isp1) {
-        currentPlayer = player2
-        otherPlayer = player1
-    } else {
-        currentPlayer = player1
-        otherPlayer = player2
+function setCharacterEndTurnFNs(character, enemy) {
+    character.endTurn = () => {
+        if (character.user === 'cpu') {
+            enableAllowedButtons(enemy)
+            return
+        }
+        if (enemy.user === 'cpu') {
+            cpuData.isTurn = true
+            return
+        }
+        let direction = character.user === 'player1' ? 'shiftDown' : 'shiftUp'
+        let animationsDone = []
+        for (let animation of gameplayScreenAnimations[direction]) {
+            animationsDone.push(animation.play().then())
+        }
+        Promise.all(animationsDone).then(() => enableAllowedButtons(enemy))
     }
 }
 
@@ -200,18 +237,6 @@ function takeTurn(character, enemy, moveName) {
     console.log(character)
     if (!game.isFinished) {
         let responsePopup
-
-        //if it's cpu's turn...
-        if (character.user == 'cpu') {
-            moveName = cpuChooseMove()             //...select random cpu move
-            character.endTurn = () => { enableAllowedButtons(enemy) }  //...fn to advance turn toggles player buttons active
-        } else {
-            character.endTurn = () => {
-                shiftButtons()
-                gameGraphicsAnimation.play().then(() => enableAllowedButtons(enemy))
-                //cpuData.isTurn = true 
-            }
-        }
         //set popup text using moveName then...
         setPopupString(moveName, character, enemy, popup.maxDuration)
 
@@ -227,20 +252,17 @@ function takeTurn(character, enemy, moveName) {
 
             setTimeout(() => setPopupString(result, character, enemy, popup.maxDuration, true), delay)
         }
-
-
         //call character class move using moveName
         setTimeout(() => { character.doMove(moveName, responsePopup, enemy) }, 1000)
-
     }
 }
 
 
 function cpuChooseMove() {
-    let moveNum = random(player2Data.moveOptions)
+    let moveNum = random(cpuData.moveOptions)
     let move = moveNames[moveNum]
-
-    if (player2.pp[move] == 0) return cpuChooseMove()
+    console.log('cpu chose ' + move)
+    //if (player2.pp[move].cur == 0) return cpuChooseMove()
     return move
 }
 
@@ -267,11 +289,15 @@ function setPopupString(lookup, character, enemy, maxDur, isResponse) {
     let newText
     let user
     let strings
+    let a = "opppnents's"
+    let b = 'their'
     if (character.user === 'player1') {
         user = enemy.user === 'cpu' ? 'You' : 'Player 1'
+        b = enemy.user === 'cpu' ? 'your' : b
         popup.coords = player1Data.coords.popup
     } else {
         user = character.user === 'cpu' ? 'CPU' : 'Player 2'
+        a = character.user === 'cpu' ? 'your' : a
         popup.coords = player2Data.coords.popup
     }
 
@@ -282,7 +308,7 @@ function setPopupString(lookup, character, enemy, maxDur, isResponse) {
             lucky: 'It was a lucky hit!',
             heal: user + ' regained some health',
             patchArmor: "It's blocking power was slightly restored",
-            armorPierce: "It's took some damage",
+            armorPierce: "It took some damage",
             regenPP: 'Move PP went up',
             renewArmor: "It's back to original condition",
             special: 'It did massive damage!!!'
@@ -291,8 +317,8 @@ function setPopupString(lookup, character, enemy, maxDur, isResponse) {
         strings = {
             attack: user + ' attacked!',
             heal: user + ' healed!',
-            patchArmor: user + ' patched their armor',
-            armorPierce: user + " attacked the opponent's armor",
+            patchArmor: user + ' patched ' + b + ' armor',
+            armorPierce: user + ' attacked ' + a + ' armor',
             regenPP: user + ' regens some PP',
             renewArmor: user + ' got new armor',
             special: user + ' used a secret ancient technique!'
@@ -313,7 +339,7 @@ function showMovePP(relX, relY) {
         for (let move in player1.pp) {
             let x = buttons.mainMoves[i][move].x + relX
             let y = buttons.mainMoves[i][move].y + relY
-            text('' + player1.pp[move].cur, x, y)
+            text('' + player.pp[move].cur, x, y)
             // text(player.pp[move].cur + "/" + player.pp[move].max, x, y)
         }
     }
@@ -359,7 +385,7 @@ function drawHpBar(character, x, y) {
     gameplayFrameBuffer.stroke(0);
     gameplayFrameBuffer.strokeWeight(2)
     gameplayFrameBuffer.noFill();
-    gameplayFrameBuffer.rect(x - 1, y - 1, 300 - 2, 20 + 2);
+    gameplayFrameBuffer.rect(x - 1, y - 1, 300 + 2, 20 + 2);
     gameplayFrameBuffer.fill(r, g, b)
     //fill(40);
     gameplayFrameBuffer.noStroke();
@@ -381,6 +407,7 @@ function endGame(str) {
     game.isFinished = true;
     text(str, 200, 200);
 }
+
 
 
 

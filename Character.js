@@ -20,21 +20,21 @@ class Character {
         this.lkMultiplier = 1.25
 
         //probabilities
-        this.hitChance = 90;
-        this.luck = 33; //33
+        this.hitChance = 100;
+        this.luck = 0; //33
         this.superLuck = 0;  //get calculated based on consecHitCount, 5 by default
 
         //points
-        this.gp = 5
+        this.gp = 0
         this.maxgp = 5
         this.hp = 100;
-        this.ap = 0
+        this.ap = 100
         //this.pp = [{ cur: 1, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }]
 
         this.consecHitCount = 0
 
         this.pp = {
-            attack: { cur: 1, max: 10 },
+            attack: { cur: 10, max: 10 },
             heal: { cur: 10, max: 10 },
             patchArmor: { cur: 10, max: 10 },
             armorPierce: { cur: 10, max: 10 }
@@ -95,7 +95,7 @@ class Character {
 
         this.pp['attack'].cur--
 
-        //this.superLuck = this.getSuperLuckMultiplier()
+        this.superLuck = this.getSuperLuckMultiplier()
 
         //hit determination
         if (Character.probability(this.hitChance)) {
@@ -136,7 +136,7 @@ class Character {
                 return Promise.resolve()
             }
         }
-        this.consecHitCount = hitOutcome === 'hit' ? this.consecHitCount + 1 : 0
+        this.consecHitCount = hitOutcome === 'normalHit' ? this.consecHitCount + 1 : 0
         return handleOutcome
     }
     //corresponding move animation will play first...

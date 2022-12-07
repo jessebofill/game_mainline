@@ -1,23 +1,3 @@
-function makeButtonAnimations() {
-    function getGroupAnimation(button, buttonGroup) {
-        let groupAnimations = {
-            mainMoves: new Animation(button, { y: [205, 20, 'linear'] }),
-            gaugeMoves: new Animation(button, { y: [205, 20, 'linear'] }),
-            ppUps: new Animation(button, { y: [205, 20, 'linear'] })
-        }
-        return groupAnimations[buttonGroup]
-    }
-
-    for (let buttonGroup in buttons) {
-        for (let buttonMan of buttons[buttonGroup]) {
-            for (let prop in buttonMan) {
-                if (buttonMan[prop] instanceof Button) {
-                    globalAnimations.push(getGroupAnimation(buttonMan[prop], buttonGroup))
-                }
-            }
-        }
-    }
-}
 
 
 function initGameButtons(is2player) {
@@ -37,8 +17,6 @@ function initGameButtons(is2player) {
             buttonMan.onClickAny(disableAllButtons)
         }
     }
-    makeButtonAnimations()
-
     disableAllButtons()
 }
 
