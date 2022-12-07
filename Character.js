@@ -12,7 +12,7 @@ class Character {
         this.atk = 4;
         this.hl = 10;
         this.def = 10;
-        this.admg = 10;
+        this.admg = 50;
         this.ahl = 10;
 
         //multipliers
@@ -20,8 +20,8 @@ class Character {
         this.lkMultiplier = 1.25
 
         //probabilities
-        this.hitChance = 100;
-        this.luck = 0; //33
+        this.hitChance = 50;
+        this.luck = 50; //33
         this.superLuck = 0;  //get calculated based on consecHitCount, 5 by default
 
         //points
@@ -31,7 +31,13 @@ class Character {
         this.ap = 100
         //this.pp = [{ cur: 1, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }]
 
+        //state tracking
         this.consecHitCount = 0
+        this.isArmorBrittle = false
+        this.patchArmorCount = 0
+
+        //other 
+        this.patchArmorBrittleThreshold = 3
 
         this.pp = {
             attack: { cur: 10, max: 10 },
@@ -125,13 +131,13 @@ class Character {
             handleOutcome = () => {
                 responsePopup(hitOutcome)
                 if (hitOutcome === 'superLucky') enemy.ap -= 20
-                return enemy.animations.hp.play().then(() => { if (hitOutcome === 'lucky' && this.gp < this.maxgp) this.gp++ })
+                return enemy.animations.hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(2) })
             }
         } else {
             this.consecHitCount = 0
             hitOutcome = 'miss'
-
             handleOutcome = () => {
+                enemy.addGP(1)
                 responsePopup(hitOutcome)
                 return Promise.resolve()
             }
@@ -139,6 +145,7 @@ class Character {
         this.consecHitCount = hitOutcome === 'normalHit' ? this.consecHitCount + 1 : 0
         return handleOutcome
     }
+
     //corresponding move animation will play first...
     patchArmor(responsePopup) {
         //...then return callback to do next steps...
@@ -148,8 +155,11 @@ class Character {
 
         return () => {
             this.ap = Character.getAp(this.ap, this.ahl)
-
-            responsePopup('patchArmor')
+            this.patchArmorCount++
+            if (this.patchArmorCount == this.patchArmorBrittleThreshold) {
+                this.isArmorBrittle = true
+                responsePopup('brittleArmor')
+            } else responsePopup('patchArmor')
             return Promise.resolve()
         }
     }
@@ -162,8 +172,11 @@ class Character {
         this.pp['armorPierce'].cur--
 
         return () => {
-            enemy.ap = Character.getAp(enemy.ap, Math.round(-this.admg * random(0.7, 1.3)))
-            responsePopup('armorPierce')
+            enemy.ap = enemy.isArmorBrittle ? 0 : Character.getAp(enemy.ap, Math.round(-this.admg * random(0.7, 1.3)))
+            if(enemy.ap === 0){
+                this.addGP(2)
+                responsePopup('armorBreak')
+            } else responsePopup('armorPierce')
             return Promise.resolve()
         }
     }
@@ -181,7 +194,8 @@ class Character {
     renewArmor(responsePopup) {
         return () => {
             this.gp -= this.gpCost.renewArmor
-
+            this.isArmorBrittle =false
+            this.patchArmorCount = 0
             responsePopup('renewArmor')
             return this.animations.refillArmor.play().then()
         }
@@ -221,6 +235,11 @@ class Character {
 
     endTurn() {
 
+    }
+
+    addGP(gp){
+        let newGp = this.gp + gp
+        this.gp = newGp >= this.maxgp ? this.maxgp : newGp
     }
 
     getSuperLuckMultiplier() {

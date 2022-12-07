@@ -303,12 +303,16 @@ function setPopupString(lookup, character, enemy, maxDur, isResponse) {
 
     if (isResponse) {
         strings = {
+            miss: 'The attack missed!',
             normalHit: 'It hit normally',
             superLucky: 'It was super lucky hit!',
             lucky: 'It was a lucky hit!',
             heal: user + ' regained some health',
-            patchArmor: "It's blocking power was slightly restored",
+            patchArmor: "It's defenses were slightly restored",
+            brittleArmor: `It's defenses were slightly restored, 
+            but it's very brittle!`,
             armorPierce: "It took some damage",
+            armorBreak: "It completely broke!",
             regenPP: 'Move PP went up',
             renewArmor: "It's back to original condition",
             special: 'It did massive damage!!!'
