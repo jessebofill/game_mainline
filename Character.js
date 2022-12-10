@@ -1,12 +1,18 @@
 class Character {
-    constructor(userType, x, y, spritePath) {
+    constructor(user, x, y, spritePath) {
         let t = this;
-        if (userType !== "player1" && userType !== "player2" && userType !== "cpu") console.warn("not valid user type");
+        if (user !== "player1" && user !== "player2" && user !== "cpu") console.warn("not valid user type");
 
         this.x = x;
         this.y = y;
         this.spritePath = spritePath
         this.endTurnDelay = 2000;
+
+        //points
+        this.hp = 100;
+        this.ap = 100
+        this.gp = 5
+        this.maxgp = 5
 
         //stats
         this.atk = 4;
@@ -24,20 +30,14 @@ class Character {
         this.luck = 50; //33
         this.superLuck = 0;  //get calculated based on consecHitCount, 5 by default
 
-        //points
-        this.gp = 0
-        this.maxgp = 5
-        this.hp = 100;
-        this.ap = 100
-        //this.pp = [{ cur: 1, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }, { cur: 10, max: 10 }]
-
         //state tracking
         this.consecHitCount = 0
         this.isArmorBrittle = false
         this.patchArmorCount = 0
+        this.ppUpSelection = undefined
 
         //other 
-        this.patchArmorBrittleThreshold = 3
+        this.patchArmorBrittleThreshold = 5
 
         this.pp = {
             attack: { cur: 10, max: 10 },
@@ -52,9 +52,7 @@ class Character {
             special: 5
         }
 
-        this.ppUpSelection = undefined
-
-        this.user = userType;
+        this.user = user;
 
         this.heal = this.heal.bind(this);
         this.attack = this.attack.bind(this);
@@ -64,7 +62,7 @@ class Character {
 
         this.animations = {
             hp: new Animation(this, frames.common.hp),
-            attack: new Animation(this, frames[userType === 'player1' ? 'player1' : 'player2'].atk),
+            attack: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
             refillArmor: new Animation(this, frames.common.refillArmor, 'abs')
         };
 
@@ -117,9 +115,6 @@ class Character {
                 //else if we get regular lucky
             } else if (Character.probability(this.luck)) {
                 dmg = Math.round(dmg * this.lkMultiplier);
-
-
-                //add code to increase gauge
                 hitOutcome = 'lucky';
 
                 //else normal hit
@@ -134,7 +129,6 @@ class Character {
                 return enemy.animations.hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(2) })
             }
         } else {
-            this.consecHitCount = 0
             hitOutcome = 'miss'
             handleOutcome = () => {
                 enemy.addGP(1)
@@ -173,7 +167,7 @@ class Character {
 
         return () => {
             enemy.ap = enemy.isArmorBrittle ? 0 : Character.getAp(enemy.ap, Math.round(-this.admg * random(0.7, 1.3)))
-            if(enemy.ap === 0){
+            if (enemy.ap === 0) {
                 this.addGP(2)
                 responsePopup('armorBreak')
             } else responsePopup('armorPierce')
@@ -194,25 +188,20 @@ class Character {
     renewArmor(responsePopup) {
         return () => {
             this.gp -= this.gpCost.renewArmor
-            this.isArmorBrittle =false
+            this.isArmorBrittle = false
             this.patchArmorCount = 0
             responsePopup('renewArmor')
             return this.animations.refillArmor.play().then()
         }
-
     }
 
-    special(responsePopup, enemy) {
-
-        this.gp -= this.gpCost.special
-
+    special(responsePopup, enemy) {        
         return () => {
+            this.gp -= this.gpCost.special
             responsePopup('special')
             enemy.animations.hp.asPercent(-30);
             return enemy.animations.hp.play().then()
         }
-
-
     }
 
     doMove(move, responsePopup, enemy) {
@@ -229,15 +218,11 @@ class Character {
         })
     }
 
-    doWithMoveResult(arg) {
-
-    }
-
     endTurn() {
-
+        //this function gets defined outside of class
     }
 
-    addGP(gp){
+    addGP(gp) {
         let newGp = this.gp + gp
         this.gp = newGp >= this.maxgp ? this.maxgp : newGp
     }
@@ -258,7 +243,6 @@ class Character {
     static getDefenseWeaknessMultiplier(defense) {
         // multiplier when defense value is [0, 1-25, 26-50, 51-75, 76-100]
         const level = [3, 2, 1.5, 1.25, 1]
-
         return level[Math.ceil(defense / 25)]
     }
 

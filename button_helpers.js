@@ -1,7 +1,4 @@
-
-
 function initGameButtons(is2player) {
-
     createMainButtons(player1, player2)
     createGaugeButtons(player1, player2)
     createPPUpButtons(player1, player2)
@@ -12,8 +9,8 @@ function initGameButtons(is2player) {
         createPPUpButtons(player2, player1, is2player)
     }
 
-    for (let each in buttons) {
-        for (let buttonMan of buttons[each]) {
+    for (let each in gameplayButtons) {
+        for (let buttonMan of gameplayButtons[each]) {
             buttonMan.onClickAny(disableAllButtons)
         }
     }
@@ -35,10 +32,8 @@ function createMainButtons(thisPlayer, otherPlayer) {
         mButtons.rename('button' + i, moveNames[i])
         mButtons[moveNames[i]].onClick(takeTurn, thisPlayer, otherPlayer, moveNames[i]);
     }
-    buttons.mainMoves.push(mButtons)
+    gameplayButtons.mainMoves.push(mButtons)
 }
-
-
 
 function createGaugeButtons(thisPlayer, otherPlayer) {
     let x = thisPlayer.user === 'player1' ? width / 2 : 0
@@ -47,18 +42,10 @@ function createGaugeButtons(thisPlayer, otherPlayer) {
     gButtons.rename('button0', 'regenPP', 'PP Up')
     gButtons.rename('button1', 'renewArmor', 'Renew Armor')
     gButtons.rename('button2', 'special')
-    let fn = () => {
-        setPPUpButtonsVisibility(true, thisPlayer);
-        console.log('ppup')
-    }
-    gButtons.regenPP.onClick(fn)
-    // gButtons.regenPP.onClick(setPPUpButtonsVisibility, true, thisPlayer)
+    gButtons.regenPP.onClick(setPPUpButtonsVisibility, true, thisPlayer)
     gButtons.renewArmor.onClick(takeTurn, thisPlayer, otherPlayer, 'renewArmor')
     gButtons.special.onClick(takeTurn, thisPlayer, otherPlayer, 'special')
-
-    buttons.gaugeMoves.push(gButtons)
-
-
+    gameplayButtons.gaugeMoves.push(gButtons)
 }
 
 function createPPUpButtons(thisPlayer, otherPlayer) {
@@ -74,7 +61,7 @@ function createPPUpButtons(thisPlayer, otherPlayer) {
         })
         pButtons.rename('button' + i, moveNames[i])
     }
-    buttons.ppUps.push(pButtons)
+    gameplayButtons.ppUps.push(pButtons)
 
     setPPUpButtonsVisibility(false, thisPlayer)
 }
@@ -92,14 +79,14 @@ function enableAllowedButtons(player) {
         if (player.gp >= player.gpCost[move]) allowedGaugeButtons.push(move)
     }
 
-    buttons.mainMoves[playerIndex].setProperty('active', true, ...allowedMoveButtons)
-    buttons.gaugeMoves[playerIndex].setProperty('active', true, ...allowedGaugeButtons)
+    gameplayButtons.mainMoves[playerIndex].setProperty('active', true, ...allowedMoveButtons)
+    gameplayButtons.gaugeMoves[playerIndex].setProperty('active', true, ...allowedGaugeButtons)
 }
 
 function disableAllButtons() {
-    for (let each in buttons) {
+    for (let each in gameplayButtons) {
         if (each === 'ppUps') continue
-        for (let buttonMan of buttons[each]) {
+        for (let buttonMan of gameplayButtons[each]) {
             buttonMan.setProperty("active", false, "all");
         }
     }
@@ -109,13 +96,13 @@ function setPPUpButtonsVisibility(isOn, player) {
     let visibility = isOn ? 'all' : 'invisible'
     let playerIndex = player.user === 'player1' ? 0 : 1
     console.log(player.user)
-    buttons.ppUps[playerIndex].setProperty('active', isOn, 'all')
-    buttons.ppUps[playerIndex].setProperty('visibility', visibility, 'all')
+    gameplayButtons.ppUps[playerIndex].setProperty('active', isOn, 'all')
+    gameplayButtons.ppUps[playerIndex].setProperty('visibility', visibility, 'all')
 }
 
-function showButtons() {
-    for (let each in buttons) {
-        for (let buttonMan of buttons[each]) {
+function showGameplayButtons() {
+    for (let each in gameplayButtons) {
+        for (let buttonMan of gameplayButtons[each]) {
             buttonMan.show()
         }
     }
