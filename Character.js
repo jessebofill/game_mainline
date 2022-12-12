@@ -9,8 +9,8 @@ class Character {
         this.endTurnDelay = 2000;
 
         //points
-        this.hp = 100;
-        this.ap = 100
+        this.hp = 10;
+        this.ap = 50
         this.gp = 5
         this.maxgp = 5
 
@@ -19,14 +19,14 @@ class Character {
         this.hl = 10;
         this.def = 10;
         this.admg = 50;
-        this.ahl = 10;
+        this.ahl = 50;
 
         //multipliers
         this.slMultiplier = 2.5
         this.lkMultiplier = 1.25
 
         //probabilities
-        this.hitChance = 50;
+        this.hitChance = 90;
         this.luck = 50; //33
         this.superLuck = 0;  //get calculated based on consecHitCount, 5 by default
 
@@ -61,13 +61,21 @@ class Character {
         this.sprite = loadImage(this.spritePath)
 
         this.animations = {
-            hp: new Animation(this, frames.common.hp),
-            attack: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            refillArmor: new Animation(this, frames.common.refillArmor, 'abs')
+            a_attack: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_heal: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_patchArmor: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_armorPierce: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_regenPP: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_renewArmor: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_special: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            b_hp: new Animation(this, frames.common.hp),
+            b_armor: new Animation(this, frames.common.armor)
         };
 
-        this.animations.hp.animatedProps.hp.range[0] = 0;
-        this.animations.hp.animatedProps.hp.range[1] = 100;
+        this.animations.b_hp.animatedProps.hp.range[0] = 0;
+        this.animations.b_hp.animatedProps.hp.range[1] = 100;
+        this.animations.b_armor.animatedProps.ap.range[0] = 0;
+        this.animations.b_armor.animatedProps.ap.range[1] = 100;
 
     }
 
@@ -83,11 +91,11 @@ class Character {
 
     heal(responsePopup) {
         this.pp['heal'].cur--
-        this.animations.hp.asPercent(this.hl)
+        this.animations.b_hp.asPercent(this.hl)
 
         return () => {
             responsePopup('heal')
-            return this.animations.hp.play().then()
+            return this.animations.b_hp.play().then()
         }
     }
 
@@ -122,11 +130,11 @@ class Character {
 
             }
 
-            enemy.animations.hp.asPercent(-dmg);
+            enemy.animations.b_hp.asPercent(-dmg);
             handleOutcome = () => {
                 responsePopup(hitOutcome)
                 if (hitOutcome === 'superLucky') enemy.ap -= 20
-                return enemy.animations.hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(2) })
+                return enemy.animations.b_hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(2) })
             }
         } else {
             hitOutcome = 'miss'
@@ -146,15 +154,16 @@ class Character {
         //...calculate and apply shield restore
 
         this.pp['patchArmor'].cur--
-
+        this.animations.b_armor.asPercent(this.ahl)
         return () => {
-            this.ap = Character.getAp(this.ap, this.ahl)
             this.patchArmorCount++
             if (this.patchArmorCount == this.patchArmorBrittleThreshold) {
                 this.isArmorBrittle = true
                 responsePopup('brittleArmor')
             } else responsePopup('patchArmor')
-            return Promise.resolve()
+            console.log('-- > Character > ahl', this.ahl)
+            
+            return this.animations.b_armor.play().then()
         }
     }
 
@@ -166,20 +175,22 @@ class Character {
         this.pp['armorPierce'].cur--
 
         return () => {
-            enemy.ap = enemy.isArmorBrittle ? 0 : Character.getAp(enemy.ap, Math.round(-this.admg * random(0.7, 1.3)))
-            if (enemy.ap === 0) {
+            let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.7, 1.3))
+            if (admg >= enemy.ap) {
+                console.log('break')
                 this.addGP(2)
                 responsePopup('armorBreak')
             } else responsePopup('armorPierce')
-            return Promise.resolve()
+            enemy.animations.b_armor.asPercent(-admg)
+            return enemy.animations.b_armor.play().then()
         }
     }
 
     regenPP(responsePopup) {
+        let move = this.ppUpSelection
         return () => {
-            this.pp[this.ppUpSelection].cur += 5
+            this.pp[move].cur = this.pp[move].cur + 5 >= this.pp[move].max ? this.pp[move].max : this.pp[move].cur + 5        
             this.gp -= this.gpCost.regenPP
-
             responsePopup('regenPP')
             return Promise.resolve()
         }
@@ -191,7 +202,8 @@ class Character {
             this.isArmorBrittle = false
             this.patchArmorCount = 0
             responsePopup('renewArmor')
-            return this.animations.refillArmor.play().then()
+            this.animations.b_armor.asPercent(100)
+            return this.animations.b_armor.play().then()
         }
     }
 
@@ -199,14 +211,14 @@ class Character {
         return () => {
             this.gp -= this.gpCost.special
             responsePopup('special')
-            enemy.animations.hp.asPercent(-30);
-            return enemy.animations.hp.play().then()
+            enemy.animations.b_hp.asPercent(-30);
+            return enemy.animations.b_hp.play().then()
         }
     }
 
     doMove(move, responsePopup, enemy) {
         if (move !== 'attack') this.consecHitCount = 0
-        let characterAnimationPlay = this.animations[move]?.play ?? (() => Promise.resolve())
+        let characterAnimationPlay = this.animations['a_' + move]?.play ?? (() => Promise.resolve())
         let handleOutcome = this[move](responsePopup, enemy)
         characterAnimationPlay().then(handleOutcome).then(this.delayTurn).then(this.endTurn);
     }
