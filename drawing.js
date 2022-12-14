@@ -1,5 +1,5 @@
 function drawGameplayFrame(){
-    gameplayFrameBuffer.background(220);
+    gameplayFrameBuffer.background('#d4cfc9');
 
     drawHpBar(player1, player1Data.coords.hpBar[0], player1Data.coords.hpBar[1]);
     drawGauge(player1, player1Data.coords.gauge[0], player1Data.coords.gauge[1])

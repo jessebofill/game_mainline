@@ -27,11 +27,22 @@ function createStartButtons() {
 function createMainButtons(thisPlayer, otherPlayer) {
     let y = thisPlayer.user === 'player1' ? 450 : -205
     let mButtons = new ButtonMan(4, 2, 2, 300, 75, 0, y, width, 150);
-
+    
+    mButtons.rename('button0', moveNames[0], 'Attack')
+    mButtons.rename('button1', moveNames[1], 'Heal')
+    mButtons.rename('button2', moveNames[2], 'Patch Armor')
+    mButtons.rename('button3', moveNames[3], 'Armor Pierce')
     for (let i = 0; i < 4; i++) {
-        mButtons.rename('button' + i, moveNames[i])
         mButtons[moveNames[i]].onClick(takeTurn, thisPlayer, otherPlayer, moveNames[i]);
     }
+
+    // mButtons.setProperty('color', '#a7c4c9', 'all')
+    // mButtons.setProperty('textColor', '#455054', 'all')
+    // mButtons.setProperty('borderColor', '#455054', 'all')
+    // mButtons.setProperty('depressedColor', '#f64668', 'all')
+    // mButtons.setProperty('highlightColor', '#308695', 'all')
+    // mButtons.setProperty('visibility', 'noBorder', 'all')
+
     gameplayButtons.mainMoves.push(mButtons)
 }
 
@@ -41,10 +52,18 @@ function createGaugeButtons(thisPlayer, otherPlayer) {
     let gButtons = new ButtonMan(3, 3, 1, width / 6, 50, x, y, width / 2, 50)
     gButtons.rename('button0', 'regenPP', 'PP Up')
     gButtons.rename('button1', 'renewArmor', 'Renew Armor')
-    gButtons.rename('button2', 'special')
+    gButtons.rename('button2', 'special', 'Special')
     gButtons.regenPP.onClick(setPPUpButtonsVisibility, true, thisPlayer)
     gButtons.renewArmor.onClick(takeTurn, thisPlayer, otherPlayer, 'renewArmor')
     gButtons.special.onClick(takeTurn, thisPlayer, otherPlayer, 'special')
+
+
+
+    // gButtons.setProperty('color', '#984063', 'all')
+    // gButtons.setProperty('textColor', '#fe9677', 'all')
+    // gButtons.setProperty('borderColor', '#54283a', 'all')
+    // gButtons.setProperty('depressedColor', '#f64668', 'all')
+    // gButtons.setProperty('highlightColor', '#54283a', 'all')
     gameplayButtons.gaugeMoves.push(gButtons)
 }
 
@@ -59,8 +78,12 @@ function createPPUpButtons(thisPlayer, otherPlayer) {
             thisPlayer.ppUpSelection = moveNames[i];
             takeTurn(thisPlayer, otherPlayer, 'regenPP')
         })
-        pButtons.rename('button' + i, moveNames[i])
     }
+    pButtons.rename('button0', moveNames[0], 'Attack')
+    pButtons.rename('button1', moveNames[1], 'Heal')
+    pButtons.rename('button2', moveNames[2], 'Patch Armor')
+    pButtons.rename('button3', moveNames[3], 'Armor Pierce')
+    pButtons.setProperty('textSize', 12, 'all')
     gameplayButtons.ppUps.push(pButtons)
 
     setPPUpButtonsVisibility(false, thisPlayer)

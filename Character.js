@@ -9,17 +9,17 @@ class Character {
         this.endTurnDelay = 2000;
 
         //points
-        this.hp = 10;
-        this.ap = 50
-        this.gp = 5
+        this.hp = 100;
+        this.ap = 100
+        this.gp = 0
         this.maxgp = 5
 
         //stats
         this.atk = 4;
         this.hl = 10;
         this.def = 10;
-        this.admg = 50;
-        this.ahl = 50;
+        this.admg = 10;
+        this.ahl = 10;
 
         //multipliers
         this.slMultiplier = 2.5

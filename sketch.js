@@ -75,7 +75,7 @@ function draw() {
         }
         //DRAW GAMEPLAY SCREEN
         drawGameplayFrame()
-        text(player1.ap, 200,200)
+        
         //ANIMATIONS
         player1.animate()
         player2.animate()
