@@ -41,9 +41,9 @@ class Character {
 
         this.pp = {
             attack: { cur: 10, max: 10 },
-            heal: { cur: 10, max: 10 },
-            patchArmor: { cur: 10, max: 10 },
-            armorPierce: { cur: 10, max: 10 }
+            heal: { cur: 5, max: 5 },
+            patchArmor: { cur: 5, max: 5 },
+            armorPierce: { cur: 8, max: 8 }
         }
 
         this.gpCost = {
@@ -157,7 +157,7 @@ class Character {
         this.animations.b_armor.asPercent(this.ahl)
         return () => {
             this.patchArmorCount++
-            if (this.patchArmorCount == this.patchArmorBrittleThreshold) {
+            if (this.patchArmorCount >= this.patchArmorBrittleThreshold) {
                 this.isArmorBrittle = true
                 responsePopup('brittleArmor')
             } else responsePopup('patchArmor')

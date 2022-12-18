@@ -18,7 +18,7 @@ function startGame(is2player) {
     if (is2player) {
         create2pScreenShiftAnimations()
     } else {
-    //cpuData.moveOptions = generateMoveChoices()
+    cpuData.moveOptions = generateMoveChoices()
     getCpuPrefString();
     }
     game.isStarted = true;
