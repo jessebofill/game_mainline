@@ -61,6 +61,11 @@ class Popup {
         setTimeout(() => this.on = false, this.dur);
     }
     show() {
+        gameplayFrameBuffer.push()
+        gameplayFrameBuffer.noStroke()
+        gameplayFrameBuffer.fill(220)
         if (this.on) gameplayFrameBuffer.text(this.text, this.x, this.y)
+        gameplayFrameBuffer.pop()
+
     }
 }

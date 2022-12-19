@@ -11,7 +11,7 @@ class Character {
         //points
         this.hp = 100;
         this.ap = 100
-        this.gp = 0
+        this.gp = 5
         this.maxgp = 5
 
         //stats
@@ -186,11 +186,11 @@ class Character {
         this.pp['armorPierce'].cur--
 
         return () => {
-            let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.7, 1.3))
             if (enemy.ap == 0) {
                 responsePopup('alreadyBroken')
                 return Promise.resolve()
             } else {
+                let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.7, 1.3))
                 if (admg >= enemy.ap) {
                     console.log('break')
                     this.addGP(2)

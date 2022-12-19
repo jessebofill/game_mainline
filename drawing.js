@@ -1,5 +1,5 @@
 function drawGameplayFrame(){
-    gameplayFrameBuffer.background('#d4cfc9');
+    gameplayFrameBuffer.background('#202020');
 
     drawHpBar(player1, player1Data.coords.hpBar[0], player1Data.coords.hpBar[1]);
     drawGauge(player1, player1Data.coords.gauge[0], player1Data.coords.gauge[1])
@@ -49,8 +49,9 @@ function drawGauge(character, x, y) {
     gameplayFrameBuffer.push()
     let w = 170
     let h = 16
-    gameplayFrameBuffer.stroke(0)
-    gameplayFrameBuffer.fill(90, 55, 160)
+    gameplayFrameBuffer.stroke(color('#212121'))
+    // gameplayFrameBuffer.fill(90, 55, 160)
+    gameplayFrameBuffer.fill(color('#13d3bf'))
     gameplayFrameBuffer.rect(x, y, character.gp * w / character.maxgp, h)
     gameplayFrameBuffer.noFill()
     gameplayFrameBuffer.rect(x, y, w, h)
@@ -73,7 +74,7 @@ function drawHpBar(character, x, y) {
         b = 10
     }
     gameplayFrameBuffer.push()
-    gameplayFrameBuffer.stroke(0);
+    gameplayFrameBuffer.stroke(color('#212121'));
     gameplayFrameBuffer.strokeWeight(2)
     gameplayFrameBuffer.noFill();
     gameplayFrameBuffer.rect(x - 1, y - 1, 300 + 2, 20 + 2);

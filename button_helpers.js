@@ -29,20 +29,30 @@ function createMainButtons(thisPlayer, otherPlayer) {
     let mButtons = new ButtonMan(4, 2, 2, 300, 75, 0, y, width, 150);
     
     mButtons.rename('button0', moveNames[0], 'Attack')
-    mButtons.rename('button1', moveNames[1], 'Heal')
-    mButtons.rename('button2', moveNames[2], 'Patch Armor')
-    mButtons.rename('button3', moveNames[3], 'Armor Pierce')
+    mButtons.rename('button1', moveNames[3], 'Armor Pierce')
+    mButtons.rename('button2', moveNames[1], 'Heal')
+    mButtons.rename('button3', moveNames[2], 'Patch Armor')
     for (let i = 0; i < 4; i++) {
         mButtons[moveNames[i]].onClick(takeTurn, thisPlayer, otherPlayer, moveNames[i]);
     }
 
-    // mButtons.setProperty('color', '#a7c4c9', 'all')
-    // mButtons.setProperty('textColor', '#455054', 'all')
+    mButtons.setProperty('color', '#b599d7', 'attack', 'heal')
+    mButtons.setProperty('highlightColor', '#7f68a0', 'attack', 'heal')
+    mButtons.setProperty('borderColor', '#7f68a0', 'attack', 'heal')
+    mButtons.setProperty('color', '#13d3bf', 'armorPierce', 'patchArmor')
+    mButtons.setProperty('highlightColor', '#0e756c', 'armorPierce', 'patchArmor')
+    mButtons.setProperty('borderColor', '#0e756c', 'armorPierce', 'patchArmor')
+    mButtons.setProperty('textColor', '#afafaf', 'all')
+    mButtons.setProperty('borderWeight', 2, 'all')
     // mButtons.setProperty('borderColor', '#455054', 'all')
-    // mButtons.setProperty('depressedColor', '#f64668', 'all')
-    // mButtons.setProperty('highlightColor', '#308695', 'all')
-    // mButtons.setProperty('visibility', 'noBorder', 'all')
-
+    mButtons.setProperty('depressedColor', '#5b5b5b', 'all')
+    // mButtons.setProperty('highlightColor', '#7f68a0', 'all')
+    mButtons.setProperty('visibility', 'noBorder', 'all')
+    
+    mButtons.setProperty('textSize', 30, 'all')
+    mButtons.setProperty('color', '#2e2e2e', 'all')
+    mButtons.setProperty('highlightColor', '#474747', 'all')
+    // mButtons.setProperty('borderColor', '#212121', 'all')
     gameplayButtons.mainMoves.push(mButtons)
 }
 
@@ -60,10 +70,17 @@ function createGaugeButtons(thisPlayer, otherPlayer) {
 
 
     // gButtons.setProperty('color', '#984063', 'all')
-    // gButtons.setProperty('textColor', '#fe9677', 'all')
+    gButtons.setProperty('textColor', '#afafaf', 'all')
     // gButtons.setProperty('borderColor', '#54283a', 'all')
     // gButtons.setProperty('depressedColor', '#f64668', 'all')
     // gButtons.setProperty('highlightColor', '#54283a', 'all')
+
+    gButtons.setProperty('visibility', 'noBorder', 'all')
+
+    gButtons.setProperty('color', '#2e2e2e', 'all')
+    gButtons.setProperty('highlightColor', '#474747', 'all')
+    // gButtons.setProperty('borderColor', '#212121', 'all')
+
     gameplayButtons.gaugeMoves.push(gButtons)
 }
 
@@ -80,9 +97,9 @@ function createPPUpButtons(thisPlayer, otherPlayer) {
         })
     }
     pButtons.rename('button0', moveNames[0], 'Attack')
-    pButtons.rename('button1', moveNames[1], 'Heal')
-    pButtons.rename('button2', moveNames[2], 'Patch Armor')
-    pButtons.rename('button3', moveNames[3], 'Armor Pierce')
+    pButtons.rename('button1', moveNames[3], 'Armor Pierce')
+    pButtons.rename('button2', moveNames[1], 'Heal')
+    pButtons.rename('button3', moveNames[2], 'Patch Armor')
     pButtons.setProperty('textSize', 12, 'all')
     gameplayButtons.ppUps.push(pButtons)
 
