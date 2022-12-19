@@ -25,7 +25,8 @@ function cpuChooseMove() {
                 }
             }
         }
-        let total = Math.ceil(possibililties.length / (0.7))
+        let prob = player2.hp / 100
+        let total = Math.ceil(possibililties.length / (prob))
         let curLength = possibililties.length
         for (let i = 0; i < total - curLength; i++) {
             possibililties.push(false)
@@ -40,8 +41,9 @@ function cpuChooseMove() {
     let healW = (player2.hp < 100 - player2.hl) ? 100 - ((player2.hp * 100) / (100 - player2.hl)) : 0
     let patchW = (player2.ap < 70) ? 100 - ((player2.ap * 100) / (70)) : 0
     let otherW = 100 - ((healW + patchW) / 2)
-    let x = random(200)
     let selection = [otherW, healW, patchW, otherW]
+    if (player1.ap == 0) {selection[3] = 0}
+    let x = random(selection[0] + selection[1] + selection[2] + selection[3])
     let lowerBound = 0
     for (let i = 0; i < selection.length; i++) {
         let upperBound = lowerBound + selection[i]

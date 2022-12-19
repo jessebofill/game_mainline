@@ -6,7 +6,7 @@ class Character {
         this.x = x;
         this.y = y;
         this.spritePath = spritePath
-        this.endTurnDelay = 2000;
+        this.endTurnDelay = 500;
 
         //points
         this.hp = 100;
@@ -94,8 +94,13 @@ class Character {
         this.animations.b_hp.asPercent(this.hl)
 
         return () => {
-            responsePopup('heal')
-            return this.animations.b_hp.play().then()
+            if (this.hp == 100) {
+                responsePopup('alreadyFullHp')
+                return Promise.resolve()
+            } else {
+                responsePopup('heal')
+                return this.animations.b_hp.play().then()
+            }
         }
     }
 
@@ -134,7 +139,7 @@ class Character {
             handleOutcome = () => {
                 responsePopup(hitOutcome)
                 if (hitOutcome === 'superLucky') enemy.ap -= 20
-                return enemy.animations.b_hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(2) })
+                return enemy.animations.b_hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(1) })
             }
         } else {
             hitOutcome = 'miss'
@@ -154,16 +159,22 @@ class Character {
         //...calculate and apply shield restore
 
         this.pp['patchArmor'].cur--
-        this.animations.b_armor.asPercent(this.ahl)
+
         return () => {
-            this.patchArmorCount++
-            if (this.patchArmorCount >= this.patchArmorBrittleThreshold) {
-                this.isArmorBrittle = true
-                responsePopup('brittleArmor')
-            } else responsePopup('patchArmor')
-            console.log('-- > Character > ahl', this.ahl)
-            
-            return this.animations.b_armor.play().then()
+            if (this.ap == 100) {
+                responsePopup('alreadyFullAp')
+                return Promise.resolve()
+            } else {
+                this.patchArmorCount++
+                if (this.patchArmorCount >= this.patchArmorBrittleThreshold) {
+                    this.isArmorBrittle = true
+                    responsePopup('brittleArmor')
+                } else responsePopup('patchArmor')
+                console.log('-- > Character > ahl', this.ahl)
+
+                this.animations.b_armor.asPercent(this.ahl)
+                return this.animations.b_armor.play().then()
+            }
         }
     }
 
@@ -176,20 +187,25 @@ class Character {
 
         return () => {
             let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.7, 1.3))
-            if (admg >= enemy.ap) {
-                console.log('break')
-                this.addGP(2)
-                responsePopup('armorBreak')
-            } else responsePopup('armorPierce')
-            enemy.animations.b_armor.asPercent(-admg)
-            return enemy.animations.b_armor.play().then()
+            if (enemy.ap == 0) {
+                responsePopup('alreadyBroken')
+                return Promise.resolve()
+            } else {
+                if (admg >= enemy.ap) {
+                    console.log('break')
+                    this.addGP(2)
+                    responsePopup('armorBreak')
+                } else responsePopup('armorPierce')
+                enemy.animations.b_armor.asPercent(-admg)
+                return enemy.animations.b_armor.play().then()
+            }
         }
     }
 
     regenPP(responsePopup) {
         let move = this.ppUpSelection
         return () => {
-            this.pp[move].cur = this.pp[move].cur + 5 >= this.pp[move].max ? this.pp[move].max : this.pp[move].cur + 5        
+            this.pp[move].cur = this.pp[move].cur + 5 >= this.pp[move].max ? this.pp[move].max : this.pp[move].cur + 5
             this.gp -= this.gpCost.regenPP
             responsePopup('regenPP')
             return Promise.resolve()
@@ -207,7 +223,7 @@ class Character {
         }
     }
 
-    special(responsePopup, enemy) {        
+    special(responsePopup, enemy) {
         return () => {
             this.gp -= this.gpCost.special
             responsePopup('special')

@@ -4,9 +4,11 @@ function setPopupString(lookup, character, enemy, maxDur, isResponse) {
     let strings
     let a = "opppnents's"
     let b = 'their'
+    let c = 'they'
     if (character.user === 'player1') {
         user = enemy.user === 'cpu' ? 'You' : 'Player 1'
         b = enemy.user === 'cpu' ? 'your' : b
+        c = enemy.user === 'cpu' ? 'you' : c
         popup.coords = player1Data.coords.popup
     } else {
         user = character.user === 'cpu' ? 'CPU' : 'Player 2'
@@ -21,11 +23,14 @@ function setPopupString(lookup, character, enemy, maxDur, isResponse) {
             superLucky: 'It was super lucky hit!',
             lucky: 'It was a lucky hit!',
             heal: user + ' regained some health',
+            alreadyFullHp: 'But ' + c + ' were already at full health!',
+            alreadyFullAp: "But it wasn't even damaged!",
             patchArmor: "It's defenses were slightly restored",
             brittleArmor: `It's defenses were slightly restored, 
             but it's very brittle!`,
             armorPierce: "It took some damage",
             armorBreak: "It completely broke!",
+            alreadyBroken: 'But it was already completely broken!',
             regenPP: 'Move PP went up',
             renewArmor: "It's back to original condition",
             special: 'It did massive damage!!!'
