@@ -48,7 +48,7 @@ function cpuChooseMove() {
     for (let i = 0; i < selection.length; i++) {
         let upperBound = lowerBound + selection[i]
         if (lowerBound < x && x <= upperBound) {
-            if (player2.pp[moveNames[i]].cur == 0) return cpuChooseMove()
+            if (player2.pp[moveNames[i]] && player2.pp[moveNames[i]].cur == 0) return cpuChooseMove()
             return moveNames[i]
         }
         lowerBound = upperBound

@@ -88,18 +88,18 @@ function createPPUpButtons(thisPlayer, otherPlayer) {
     let x = thisPlayer.user === 'player1' ? width / 2 - 80 : width / 2
     let y = thisPlayer.user === 'player1' ? 350 : -55
     let pButtons = new ButtonMan(4, 1, 4, 80, 25, x, y, 80, 100)
-
+    const names = ['attack', 'armorPierce', 'heal', 'patchArmor']
     for (let i = 0; i < 4; i++) {
         pButtons['button' + i].onClick(() => {
             setPPUpButtonsVisibility(false, thisPlayer);
-            thisPlayer.ppUpSelection = moveNames[i];
+            thisPlayer.ppUpSelection = names[i];
             takeTurn(thisPlayer, otherPlayer, 'regenPP')
         })
     }
-    pButtons.rename('button0', moveNames[0], 'Attack')
-    pButtons.rename('button1', moveNames[3], 'Armor Pierce')
-    pButtons.rename('button2', moveNames[1], 'Heal')
-    pButtons.rename('button3', moveNames[2], 'Patch Armor')
+    pButtons.rename('button0', names[0], 'Attack')
+    pButtons.rename('button1', names[1], 'Armor Pierce')
+    pButtons.rename('button2', names[2], 'Heal')
+    pButtons.rename('button3', names[3], 'Patch Armor')
     pButtons.setProperty('textSize', 12, 'all')
     gameplayButtons.ppUps.push(pButtons)
 
@@ -114,6 +114,7 @@ function enableAllowedButtons(player) {
     for (let move in player.pp) {
         if (player.pp[move].cur) allowedMoveButtons.push(move)
     }
+    allowedMoveButtons.push('patchArmor')
 
     for (let move in player.gpCost) {
         if (player.gp >= player.gpCost[move]) allowedGaugeButtons.push(move)

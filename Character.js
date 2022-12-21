@@ -11,15 +11,15 @@ class Character {
         //points
         this.hp = 100;
         this.ap = 100
-        this.gp = 5
+        this.gp = 0
         this.maxgp = 5
 
         //stats
         this.atk = 4;
         this.hl = 10;
         this.def = 10;
-        this.admg = 10;
-        this.ahl = 10;
+        this.admg = 12;
+        this.ahl = 20;
 
         //multipliers
         this.slMultiplier = 2.5
@@ -35,6 +35,7 @@ class Character {
         this.isArmorBrittle = false
         this.patchArmorCount = 0
         this.ppUpSelection = undefined
+        this.armorHasBroken = false
 
         //other 
         this.patchArmorBrittleThreshold = 5
@@ -42,8 +43,7 @@ class Character {
         this.pp = {
             attack: { cur: 10, max: 10 },
             heal: { cur: 5, max: 5 },
-            patchArmor: { cur: 5, max: 5 },
-            armorPierce: { cur: 8, max: 8 }
+            armorPierce: { cur: 5, max: 5 }
         }
 
         this.gpCost = {
@@ -158,8 +158,6 @@ class Character {
         //...then return callback to do next steps...
         //...calculate and apply shield restore
 
-        this.pp['patchArmor'].cur--
-
         return () => {
             if (this.ap == 100) {
                 responsePopup('alreadyFullAp')
@@ -190,10 +188,12 @@ class Character {
                 responsePopup('alreadyBroken')
                 return Promise.resolve()
             } else {
-                let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.7, 1.3))
-                if (admg >= enemy.ap) {
-                    console.log('break')
-                    this.addGP(2)
+                let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.9, 1.1))
+                if (admg >= enemy.ap) { 
+                    if (!this.armorHasBroken) {
+                        this.armorHasBroken = true
+                        this.addGP(2)
+                    }
                     responsePopup('armorBreak')
                 } else responsePopup('armorPierce')
                 enemy.animations.b_armor.asPercent(-admg)
@@ -217,6 +217,7 @@ class Character {
             this.gp -= this.gpCost.renewArmor
             this.isArmorBrittle = false
             this.patchArmorCount = 0
+            this.armorHasBroken = false
             responsePopup('renewArmor')
             this.animations.b_armor.asPercent(100)
             return this.animations.b_armor.play().then()
