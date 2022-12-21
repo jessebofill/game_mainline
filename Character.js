@@ -43,7 +43,7 @@ class Character {
         this.pp = {
             attack: { cur: 10, max: 10 },
             heal: { cur: 5, max: 5 },
-            armorPierce: { cur: 5, max: 5 }
+            armorPierce: { cur: 8, max: 8 }
         }
 
         this.gpCost = {
