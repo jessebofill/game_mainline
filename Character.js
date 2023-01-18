@@ -11,7 +11,7 @@ class Character {
         //points
         this.hp = 100;
         this.ap = 100
-        this.gp = 0
+        this.gp = 5
         this.maxgp = 5
 
         //stats
@@ -59,16 +59,21 @@ class Character {
 
 
         this.sprite = loadImage(this.spritePath)
-        this.test = getPlayerKeyframes('attack', this)
+
+        this.initAnimations()
+
+    }
+
+    async initAnimations(){
         this.animations = {
-            a_attack: new Animation(this, getPlayerKeyframes('attack', this)),
-            a_heal: new Animation(this, getPlayerKeyframes('heal', this)),
-            a_patchArmor: new Animation(this, getPlayerKeyframes('patchArmor', this)),
-            a_armorPierce: new Animation(this, getPlayerKeyframes('pierceArmor', this)),
-            a_regenPP: new Animation(this, getPlayerKeyframes('ppup', this)),
-            a_renewArmor: new Animation(this, getPlayerKeyframes('renewArmor', this)),
-            a_special: new Animation(this, getPlayerKeyframes('special', this)),
-            b_regenpp: new Animation(this, getPlayerKeyframes('ppup2', this)),
+            a_attack: new Animation(this, await  getPlayerKeyframes('attack', this)),
+            a_heal: new Animation(this, await getPlayerKeyframes('heal', this)),
+            a_patchArmor: new Animation(this, await getPlayerKeyframes('patchArmor', this)),
+            a_armorPierce: new Animation(this, await getPlayerKeyframes('pierceArmor', this)),
+            a_regenPP: new Animation(this, await getPlayerKeyframes('ppup', this)),
+            a_renewArmor: new Animation(this, await getPlayerKeyframes('renewArmor', this)),
+            a_special: new Animation(this, await getPlayerKeyframes('special', this)),
+            b_regenpp: new Animation(this, await getPlayerKeyframes('ppup2', this)),
             b_hp: new Animation(this, frames.common.hp),
             b_armor: new Animation(this, frames.common.armor)
         };
@@ -77,7 +82,6 @@ class Character {
         this.animations.b_hp.animatedProps.hp.range[1] = 100;
         this.animations.b_armor.animatedProps.ap.range[0] = 0;
         this.animations.b_armor.animatedProps.ap.range[1] = 100;
-
     }
 
     animate() {

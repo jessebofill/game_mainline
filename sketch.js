@@ -131,7 +131,6 @@ async function parseJSON(path) {
         return response.json()
     }).then((object) => {
         parsedObject = object
-        console.log(object)
     })
 
     return parsedObject
