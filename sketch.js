@@ -2,7 +2,7 @@ let player1;
 let player2;
 let gameplayFrameBuffer
 
-const gameplayFrameBufferCoords =  [0, 0]
+const gameplayFrameBufferCoords = [0, 0]
 const startButtons = []
 const moveNames = ['attack', 'heal', 'patchArmor', 'armorPierce']
 
@@ -75,7 +75,7 @@ function draw() {
         }
         //DRAW GAMEPLAY SCREEN
         drawGameplayFrame()
-        
+
         //ANIMATIONS
         player1.animate()
         player2.animate()
@@ -124,5 +124,21 @@ function endGame(str) {
     text(str, 200, 200);
 }
 
+async function parseJSON(path) {
+    let parsedObject
 
- 
+    await fetch(path).then((response) => {
+        return response.json()
+    }).then((object) => {
+        parsedObject = object
+        console.log(object)
+    })
+
+    return parsedObject
+}
+
+async function getPlayerKeyframes(prefix, character){
+    const suffix = character.user === 'player1' ? '.json' : '_invert.json'
+    return await parseJSON('keyframes/' + prefix + suffix)
+}
+

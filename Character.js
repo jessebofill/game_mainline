@@ -59,15 +59,16 @@ class Character {
 
 
         this.sprite = loadImage(this.spritePath)
-
+        this.test = getPlayerKeyframes('attack', this)
         this.animations = {
-            a_attack: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            a_heal: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            a_patchArmor: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            a_armorPierce: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            a_regenPP: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            a_renewArmor: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
-            a_special: new Animation(this, frames[user === 'player1' ? 'player1' : 'player2'].atk),
+            a_attack: new Animation(this, getPlayerKeyframes('attack', this)),
+            a_heal: new Animation(this, getPlayerKeyframes('heal', this)),
+            a_patchArmor: new Animation(this, getPlayerKeyframes('patchArmor', this)),
+            a_armorPierce: new Animation(this, getPlayerKeyframes('pierceArmor', this)),
+            a_regenPP: new Animation(this, getPlayerKeyframes('ppup', this)),
+            a_renewArmor: new Animation(this, getPlayerKeyframes('renewArmor', this)),
+            a_special: new Animation(this, getPlayerKeyframes('special', this)),
+            b_regenpp: new Animation(this, getPlayerKeyframes('ppup2', this)),
             b_hp: new Animation(this, frames.common.hp),
             b_armor: new Animation(this, frames.common.armor)
         };

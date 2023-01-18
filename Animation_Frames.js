@@ -14,18 +14,4 @@ let frames = {
 }
 
 
-function parseJSON(file_path) {
-    let parsedObject
-    fetch(file_path)
-        .then((file) => {
-            console.log(file)
-            return file.json()
-        })
-        .then((jsonString) => {
-            console.log('-- > jsonString', jsonString)
 
-
-            parsedObject = jsonString
-        })
-    return parsedObject
-}
