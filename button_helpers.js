@@ -87,9 +87,9 @@ function createGaugeButtons(thisPlayer, otherPlayer) {
 function createPPUpButtons(thisPlayer, otherPlayer) {
     let x = thisPlayer.user === 'player1' ? width / 2 - 80 : width / 2
     let y = thisPlayer.user === 'player1' ? 350 : -55
-    let pButtons = new ButtonMan(4, 1, 4, 80, 25, x, y, 80, 100)
-    const names = ['attack', 'armorPierce', 'heal', 'patchArmor']
-    for (let i = 0; i < 4; i++) {
+    let pButtons = new ButtonMan(3, 1, 4, 80, 25, x, y, 80, 100)
+    const names = ['attack', 'armorPierce', 'heal']
+    for (let i = 0; i < names.length; i++) {
         pButtons['button' + i].onClick(() => {
             setPPUpButtonsVisibility(false, thisPlayer);
             thisPlayer.ppUpSelection = names[i];
@@ -99,9 +99,14 @@ function createPPUpButtons(thisPlayer, otherPlayer) {
     pButtons.rename('button0', names[0], 'Attack')
     pButtons.rename('button1', names[1], 'Armor Pierce')
     pButtons.rename('button2', names[2], 'Heal')
-    pButtons.rename('button3', names[3], 'Patch Armor')
+    // pButtons.rename('button3', names[3], 'Patch Armor')
     pButtons.setProperty('textSize', 12, 'all')
     gameplayButtons.ppUps.push(pButtons)
+
+
+    // let playerIndex = player.user === 'player1' ? 0 : 1
+    // gameplayButtons.ppUps[playerIndex].setProperty('active', false, 'patchArmor')
+    // gameplayButtons.ppUps[playerIndex].setProperty('visibility', 'invisible', 'patchArmor')
 
     setPPUpButtonsVisibility(false, thisPlayer)
 }
@@ -137,8 +142,8 @@ function setPPUpButtonsVisibility(isOn, player) {
     let visibility = isOn ? 'all' : 'invisible'
     let playerIndex = player.user === 'player1' ? 0 : 1
     console.log(player.user)
-    gameplayButtons.ppUps[playerIndex].setProperty('active', isOn, 'all')
-    gameplayButtons.ppUps[playerIndex].setProperty('visibility', visibility, 'all')
+    gameplayButtons.ppUps[playerIndex].setProperty('active', isOn, 'attack', 'heal', 'armorPierce')
+    gameplayButtons.ppUps[playerIndex].setProperty('visibility', visibility, 'attack', 'heal', 'armorPierce')
 }
 
 function showGameplayButtons() {

@@ -4,12 +4,14 @@ function drawGameplayFrame(){
     drawHpBar(player1, player1Data.coords.hpBar[0], player1Data.coords.hpBar[1]);
     drawGauge(player1, player1Data.coords.gauge[0], player1Data.coords.gauge[1])
     //drawShield(player, playerData.coords.hpBar[0], playerData.coords.hpBar[1] + 30);
-    player1.drawCharacter();
-
-
+    
+    
     drawHpBar(player2, player2Data.coords.hpBar[0], player2Data.coords.hpBar[1]);
     drawGauge(player2, player2Data.coords.gauge[0], player2Data.coords.gauge[1])
     //drawShield(cpu, cpuData.coords.hpBar[0], cpuData.coords.hpBar[1] + 30)
+    
+    
+    player1.drawCharacter();
     player2.drawCharacter();
 
     showCpuPreference(10, 20)
