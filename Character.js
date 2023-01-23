@@ -11,7 +11,7 @@ class Character {
         //points
         this.hp = 100;
         this.ap = 100
-        this.gp = 5
+        this.gp = 0
         this.maxgp = 5
 
         //stats
@@ -61,7 +61,6 @@ class Character {
         this.sprite = loadImage(this.spritePath)
 
         this.initAnimations()
-
     }
 
     async initAnimations(){
@@ -73,7 +72,7 @@ class Character {
             a_regenPP: new Animation(this, await getPlayerKeyframes('ppup', this)),
             a_renewArmor: new Animation(this, await getPlayerKeyframes('renewArmor', this)),
             a_special: new Animation(this, await getPlayerKeyframes('special', this)),
-            b_regenpp: new Animation(this, await getPlayerKeyframes('ppup2', this)),
+            b_regenPP: new Animation(this, await getPlayerKeyframes('ppup2', this)),
             b_hp: new Animation(this, frames.common.hp),
             b_armor: new Animation(this, frames.common.armor)
         };
@@ -213,7 +212,7 @@ class Character {
             this.pp[move].cur = this.pp[move].cur + 5 >= this.pp[move].max ? this.pp[move].max : this.pp[move].cur + 5
             this.gp -= this.gpCost.regenPP
             responsePopup('regenPP')
-            return Promise.resolve()
+            return this.animations.b_regenPP.play().then()
         }
     }
 

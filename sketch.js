@@ -67,6 +67,7 @@ function draw() {
     background(220);
     //DISPLAY DURING GAMEPLAY ONLY
     if (game.isStarted) {
+        background('#202020')
         //TAKE CPU TURN
         if (cpuData.isTurn) {
             console.log('cputurn')
