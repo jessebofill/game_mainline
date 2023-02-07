@@ -2,7 +2,8 @@ class Character {
     constructor(user, x, y, spritePath) {
         let t = this;
         if (user !== "player1" && user !== "player2" && user !== "cpu") console.warn("not valid user type");
-        this.proxy = user ==='player2'
+        this.isProxy = user === 'player2'
+        this.moveResData = undefined
 
         this.x = x;
         this.y = y;
@@ -12,7 +13,7 @@ class Character {
         //points
         this.hp = 100;
         this.ap = 100
-        this.gp = 0
+        this.gp = 5
         this.maxgp = 5
 
         //stats
@@ -64,9 +65,9 @@ class Character {
         this.initAnimations()
     }
 
-    async initAnimations(){
+    async initAnimations() {
         this.animations = {
-            a_attack: new Animation(this, await  getPlayerKeyframes('attack', this)),
+            a_attack: new Animation(this, await getPlayerKeyframes('attack', this)),
             a_heal: new Animation(this, await getPlayerKeyframes('heal', this)),
             a_patchArmor: new Animation(this, await getPlayerKeyframes('patchArmor', this)),
             a_armorPierce: new Animation(this, await getPlayerKeyframes('pierceArmor', this)),
@@ -109,10 +110,32 @@ class Character {
         }
     }
 
+    proxyAttack(responsePopup, enemy, moveResData) {
+        let handleOutcome
+        const { hitOutcome, dmg } = moveResData
+
+        this.pp['attack'].cur--
+        if (hitOutcome === 'miss') {
+            handleOutcome = () => {
+                enemy.addGP(1)
+                responsePopup(hitOutcome)
+                return Promise.resolve()
+            }
+        } else {
+            enemy.animations.b_hp.asPercent(-dmg);
+            handleOutcome = () => {
+                responsePopup(hitOutcome)
+                if (hitOutcome === 'superLucky') enemy.ap -= 20
+                return enemy.animations.b_hp.play().then(() => { if (hitOutcome === 'lucky') this.addGP(1) })
+            }
+        }
+        return handleOutcome
+    }
 
     attack(responsePopup, enemy) {
         let hitOutcome = 'normalHit'
         let handleOutcome
+        let dmg
         let defWeaknessMultiplier = Character.getDefenseWeaknessMultiplier(enemy.ap)
 
         this.pp['attack'].cur--
@@ -122,7 +145,7 @@ class Character {
         //hit determination
         if (Character.probability(this.hitChance)) {
 
-            let dmg = Math.round(this.atk * defWeaknessMultiplier);
+            dmg = Math.round(this.atk * defWeaknessMultiplier);
 
 
             //if we get superlucky
@@ -155,6 +178,11 @@ class Character {
             }
         }
         this.consecHitCount = hitOutcome === 'normalHit' ? this.consecHitCount + 1 : 0
+        this.moveResData = {
+            hitOutcome: hitOutcome,
+            dmg: dmg,
+        }
+
         return handleOutcome
     }
 
@@ -185,14 +213,16 @@ class Character {
         //...calculate and apply shield restore
 
         this.pp['armorPierce'].cur--
+        let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.9, 1.1))
+        admg = this.isProxy ? this.moveResData.admg : admg
+        this.moveResData = { admg: admg }
 
         return () => {
             if (enemy.ap == 0) {
                 responsePopup('alreadyBroken')
                 return Promise.resolve()
             } else {
-                let admg = enemy.isArmorBrittle ? enemy.ap : Math.round(this.admg * random(0.9, 1.1))
-                if (admg >= enemy.ap) { 
+                if (admg >= enemy.ap) {
                     if (!this.armorHasBroken) {
                         this.armorHasBroken = true
                         this.addGP(2)
@@ -207,6 +237,7 @@ class Character {
 
     regenPP(responsePopup) {
         let move = this.ppUpSelection
+        this.moveResData = { ppUpSelection: this.ppUpSelection }
         return () => {
             this.pp[move].cur = this.pp[move].cur + 5 >= this.pp[move].max ? this.pp[move].max : this.pp[move].cur + 5
             this.gp -= this.gpCost.regenPP
@@ -235,35 +266,61 @@ class Character {
             return enemy.animations.b_hp.play().then()
         }
     }
-    async recieveData(){
-        let myPromise = new Promise(function(resolve, reject) {
-    	    socket.once('doMove', data => {
-                console.log('recieved date', data)
-    	        resolve(data);
-            });
-        });
-        this.data = await myPromise
-        console.log('-- > Character > this.data', this.data)
 
+
+    async waitForData(){
+        let movePromise
+        if(this.moveResData === undefined || this.moveResData === null) {
+            console.log('waiting to receive move data from server')
+            movePromise = new Promise((resolve) => {
+                // console.log('test')
+                this.resolveMovePromise = resolve
+            })
+        } else {
+            console.log('move data was already received')
+            return
+        }
+        // return movePromise
+        return movePromise
+    }
+
+    newMovePromise() {
+        return new Promise(resolve => {
+            console.log('proxy turn initiated')
+            this.resolveMovePromise = resolve
+        })
+    }
+
+    resolveMovePromise(moveResData) {
     }
 
     async doMove(move, responsePopup, enemy) {
         if (move !== 'attack') this.consecHitCount = 0
         let characterAnimationPlay = this.animations['a_' + move]?.play ?? (() => Promise.resolve())
-        let handleOutcome 
-        if(this.proxy) {
-            await this.recieveData()
-            handleOutcome = this.data
-            // console.log('same outcome', handleOutcome === newOutcome)
+        let handleOutcome
+        if (this.isProxy) {
+            if (move === 'attack') {
+                await this.waitForData()
+                handleOutcome = this.proxyAttack(responsePopup, enemy, this.moveResData)
+            } else if (move === 'regenPP') {
+                await this.waitForData()
+                this.ppUpSelection = this.moveResData.ppUpSelection
+                handleOutcome = this.regenPP(responsePopup)
+            } else if (move === 'armorPierce') {
+                await this.waitForData()
+                handleOutcome = this.armorPierce(responsePopup, enemy)
+            } else {
+                handleOutcome = this[move](responsePopup, enemy)
+            }
 
-            // console.log(handleOutcome)
         } else {
             handleOutcome = this[move](responsePopup, enemy)
-            console.log('-- > Character > handleOutcome', handleOutcome)
-
-            socket.emit('sendMoveOutcome', room, '[handleOutcome]')
+            console.log('sending move data to server')
+            console.log( '--move: ' + move, this.moveResData)
+            socket.emit('sendMoveOutcome', room, move, this.moveResData)
         }
         characterAnimationPlay().then(handleOutcome).then(this.delayTurn).then(this.endTurn);
+        this.moveResData = undefined
     }
 
     delayTurn = () => {

@@ -9,7 +9,6 @@ app.use(express.static('public'))
 
 let lobby = []
 // let rooms = []
-
 io.on('connection', (socket) => {
     lobby.push(socket.id)
     socket.join(socket.id)
@@ -55,11 +54,18 @@ io.on('connection', (socket) => {
 
     socket.on('endTurn', room => socket.to(room).emit('endTurn'))
 
+
     socket.on('takeTurn', (room, move) => {
+        console.log(socket.id + ' is taking turn: ' + move) 
         socket.to(room).emit('takeTurn', move)
     })
 
-    socket.on('sendMoveOutcome', (room, outcome) => socket.to(room).emit('doMove', outcome))
+    socket.on('sendMoveOutcome', (room, move, outcome) => {
+        console.log('received move data from: ' + socket.id)
+        console.log('--move: ' + move, outcome)
+        console.log('sending data to proxy')
+        socket.to(room).emit('doMove', move, outcome)
+    })
 });
 
 

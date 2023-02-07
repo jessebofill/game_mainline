@@ -30,7 +30,8 @@ const gameplayScreenAnimations = {
 
 const game = {
     isStarted: false,
-    isFinished: false
+    isFinished: false,
+    isOnline: false
 }
 
 const popup = {
@@ -130,31 +131,6 @@ function draw() {
     }
 }
 
-function takeTurnProxy(character, enemy, moveName) {
-    //moveName is string of move to use 
-    //check if game is over
-    // console.log(character)
-    if (!game.isFinished) {
-        let responsePopup
-        //set popup text using moveName then...
-        setPopupString(moveName, character, enemy, popup.maxDuration)
-
-        responsePopup = (result) => {
-            let delayedStrings = {
-                normalHit: true,
-                superLucky: true,
-                lucky: true,
-            }
-
-            let delay = delayedStrings[result] ? 1000 : 0;
-
-            setTimeout(() => setPopupString(result, character, enemy, popup.maxDuration, true), delay)
-        }
-        //call character class move using moveName
-        setTimeout(() => { character.doMove(moveName, responsePopup, enemy) }, 1000)
-    }
-}
-
 function takeTurn(character, enemy, moveName) {
     //moveName is string of move to use 
     //check if game is over
@@ -163,7 +139,7 @@ function takeTurn(character, enemy, moveName) {
 
         //emit event with (moveName)
         //on event calls takeTurnProxy(player2, player1, moveName)
-        socket.emit('takeTurn', room, moveName)
+        if (game.isOnline && character.user === 'player1') socket.emit('takeTurn', room, moveName)
         let responsePopup
         //set popup text using moveName then...
         setPopupString(moveName, character, enemy, popup.maxDuration)
@@ -197,9 +173,9 @@ async function parseJSON(path) {
     }).then((object) => {
         parsedObject = object
     })
-
+ 
     return parsedObject
-}
+} 
 
 async function getPlayerKeyframes(prefix, character){
     const suffix = character.user === 'player1' ? '.json' : '_invert.json'

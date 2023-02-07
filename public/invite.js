@@ -103,25 +103,34 @@ function addLobbyClient(id) {
 }
 
 function startOnlineGame() {
-    // removeListeners(socket)
+    removeListeners(socket)
+    game.isOnline = true
     deactivateMainMenuButtons()
     createCharacters(true)
     setupGameSocketListeners()
     initGameButtons()
-    player1.endTurn = () => {
-        console.log('turn finished')
-        socket.emit('endTurn', room)
-    }
+    // player1.endTurn = () => {
+    //     console.log('turn finished')
+    //     socket.emit('endTurn', room)
+    // }
     player2.endTurn = () => enableAllowedButtons(player1)
 
     if (initiator) enableAllowedButtons(player1)
     game.isStarted = true;
 }
 
-function setupGameSocketListeners(){
+function setupGameSocketListeners() {
     socket.on('endTurn', () => {
         console.log('opponent finished turn')
         player2.endTurn()
     })
-    socket.on('takeTurn', move => takeTurnProxy(player2, player1, move))
+    socket.on('takeTurn', move => {
+        takeTurn(player2, player1, move)
+    })
+    socket.on('doMove', (move, moveData) => {
+        console.log('received data')
+        console.log( '--move: ' + move, moveData)
+        player2.moveResData = moveData
+        player2.resolveMovePromise()
+    })
 }
