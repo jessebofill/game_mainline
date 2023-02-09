@@ -13,7 +13,7 @@ class Character {
         //points
         this.hp = 100;
         this.ap = 100
-        this.gp = 5
+        this.gp = 0
         this.maxgp = 5
 
         //stats
